@@ -119,4 +119,8 @@ contract CreatePoolAndAddLiquidityScript is Script, Constants, Config {
             PERMIT2.approve(address(token1), address(posm), type(uint160).max, type(uint48).max);
         }
     }
+
+    receive() external payable {
+        address(tx.origin).call{value: msg.value}("");
+    }
 }

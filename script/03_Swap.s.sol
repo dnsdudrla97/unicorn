@@ -21,11 +21,11 @@ contract SwapScript is Script, Constants, Config {
     /////////////////////////////////////
 
     // PoolSwapTest Contract address, default to the anvil address
-    PoolSwapTest swapRouter = PoolSwapTest(0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9);
+    PoolSwapTest swapRouter = new PoolSwapTest(IPoolManager(0x38EB8B22Df3Ae7fb21e92881151B365Df14ba967));
 
     // --- pool configuration --- //
     // fees paid by swappers that accrue to liquidity providers
-    uint24 lpFee = 3000; // 0.30%
+    uint24 lpFee = 50000; // 0.30%
     int24 tickSpacing = 60;
 
     function run() external {
@@ -46,20 +46,34 @@ contract SwapScript is Script, Constants, Config {
         // ------------------------------ //
         // Swap 100e18 token0 into token1 //
         // ------------------------------ //
-        bool zeroForOne = true;
-        IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
-            zeroForOne: zeroForOne,
-            amountSpecified: 100e18,
-            sqrtPriceLimitX96: zeroForOne ? MIN_PRICE_LIMIT : MAX_PRICE_LIMIT // unlimited impact
-        });
+        for (uint256 i = 0; i <= 100; i++) {
+            bool zeroForOne = true;
+            IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
+                zeroForOne: zeroForOne,
+                amountSpecified: 1e17,
+                sqrtPriceLimitX96: zeroForOne ? MIN_PRICE_LIMIT : MAX_PRICE_LIMIT // unlimited impact
+            });
 
-        // in v4, users have the option to receieve native ERC20s or wrapped ERC1155 tokens
-        // here, we'll take the ERC20s
-        PoolSwapTest.TestSettings memory testSettings =
-            PoolSwapTest.TestSettings({takeClaims: false, settleUsingBurn: false});
+            PoolSwapTest.TestSettings memory testSettings =
+                PoolSwapTest.TestSettings({takeClaims: false, settleUsingBurn: false});
 
-        bytes memory hookData = new bytes(0);
-        vm.broadcast();
-        swapRouter.swap(pool, params, testSettings, hookData);
+            bytes memory hookData = new bytes(0);
+            vm.broadcast();
+            swapRouter.swap(pool, params, testSettings, hookData);
+
+            zeroForOne = false;
+            params = IPoolManager.SwapParams({
+                zeroForOne: zeroForOne,
+                amountSpecified: -1e17,
+                sqrtPriceLimitX96: zeroForOne ? MIN_PRICE_LIMIT : MAX_PRICE_LIMIT // unlimited impact
+            });
+
+            testSettings =
+                PoolSwapTest.TestSettings({takeClaims: false, settleUsingBurn: false});
+
+            hookData = new bytes(0);
+            vm.broadcast();
+            swapRouter.swap(pool, params, testSettings, hookData);
+        }
     }
 }

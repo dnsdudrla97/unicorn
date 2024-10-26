@@ -20,7 +20,7 @@ contract CreatePoolOnly is Script, Constants, Config {
 
     // --- pool configuration --- //
     // fees paid by swappers that accrue to liquidity providers
-    uint24 lpFee = 5000; // 0.30%
+    uint24 lpFee = 50000; // 0.30%
     int24 tickSpacing = 60;
 
     // starting price of the pool, in sqrtPriceX96
@@ -31,8 +31,8 @@ contract CreatePoolOnly is Script, Constants, Config {
     uint256 public token1Amount = 1e18;
 
     // range of the position
-    int24 tickLower = -600; // must be a multiple of tickSpacing
-    int24 tickUpper = 600;
+    int24 tickLower = -13860;
+    int24 tickUpper = 13860;
     /////////////////////////////////////
 
     function run() external {
@@ -46,6 +46,6 @@ contract CreatePoolOnly is Script, Constants, Config {
         bytes memory hookData = new bytes(0);
 
         vm.broadcast();
-        IPoolManager(POOLMANAGER).initialize(pool, startingPrice);
+        IPoolManager(POOLMANAGER).initialize(pool, startingPrice, hookData);
     }
 }
